@@ -54,8 +54,8 @@ export default function Dashboard({ aoIrParaPacientes }) {
   const hoje = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date());
 
   return (
-    <div style={{ display: "flex", gap: "1.25rem", alignItems: "stretch" }}>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <div style={{ display: "flex", gap: "1.25rem", height: "100%" }}>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "1.25rem", height: "100%", overflowY: "auto", paddingRight: "0.15rem" }}>
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <Card
             titulo="Pacientes cadastrados"
@@ -105,8 +105,8 @@ export default function Dashboard({ aoIrParaPacientes }) {
 
       <div
         style={{
-          width: 340,
-          flexShrink: 0,
+          flex: "0 0 33%",
+          height: "100%",
           background: "var(--surface)",
           border: "1px solid var(--border)",
           borderRadius: 12,
