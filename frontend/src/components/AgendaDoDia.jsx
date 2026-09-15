@@ -3,6 +3,7 @@ import { listarAgendamentos, cancelarAgendamento } from "../api/agendamentos";
 import { gerarSlots, formatarDataISO } from "../utils/horarios";
 import ModalAgendarHorario from "./ModalAgendarHorario";
 import ModalEditarAgendamento from "./ModalEditarAgendamento";
+import Prontuario from "./Prontuario";
 
 const DURACOES = [10, 15, 20, 30];
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -64,6 +65,7 @@ export default function AgendaDoDia() {
   const [confirmandoCancelamentoId, setConfirmandoCancelamentoId] = useState(null);
   const [cancelando, setCancelando] = useState(null);
   const [erroCancelamento, setErroCancelamento] = useState(null);
+  const [prontuarioAberto, setProntuarioAberto] = useState(null); // { pacienteId, pacienteNome } | null
 
   const hoje = new Date();
   const slots = useMemo(() => gerarSlots(duracaoConsulta), [duracaoConsulta]);
@@ -245,12 +247,26 @@ export default function AgendaDoDia() {
                       </span>
                     ) : (
                       <>
-                        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
-                          <strong style={{ fontSize: "0.85rem" }}>{agendamento.pacienteNome}</strong>
+                        <button
+                          type="button"
+                          title="Abrir prontuário"
+                          onClick={() => setProntuarioAberto({ pacienteId: agendamento.pacienteId, pacienteNome: agendamento.pacienteNome })}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            lineHeight: 1.25,
+                            background: "transparent",
+                            border: "none",
+                            padding: 0,
+                            textAlign: "left",
+                          }}
+                        >
+                          <strong style={{ fontSize: "0.85rem", color: "var(--primary-dark)", textDecoration: "underline" }}>{agendamento.pacienteNome}</strong>
                           {agendamento.pacienteTelefone && (
                             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{agendamento.pacienteTelefone}</span>
                           )}
-                        </span>
+                        </button>
                         <span style={{ marginLeft: "auto", display: "flex", gap: "0.3rem", flexShrink: 0 }}>
                           <button
                             type="button"
@@ -373,6 +389,14 @@ export default function AgendaDoDia() {
             setAgendamentoEditando(null);
             recarregarAgendamentos();
           }}
+        />
+      )}
+
+      {prontuarioAberto && (
+        <Prontuario
+          pacienteId={prontuarioAberto.pacienteId}
+          pacienteNome={prontuarioAberto.pacienteNome}
+          aoFechar={() => setProntuarioAberto(null)}
         />
       )}
     </div>

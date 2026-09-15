@@ -3,7 +3,6 @@ import LogoMark from "../assets/logo-mark.svg";
 const ITENS_NAV = [
   { id: "dashboard", label: "Painel Inicial", icone: "◎" },
   { id: "pacientes", label: "Pacientes", icone: "▤" },
-  { id: "prontuarios", label: "Prontuários", icone: "▥", gatilhoModulo: "prontuarios" },
   { id: "receitas", label: "Receitas", icone: "✎", gatilhoModulo: "receitas" },
   { id: "faturamento", label: "Faturamento", icone: "$", gatilhoModulo: "faturamento" },
   { id: "modulos", label: "Módulos", icone: "▧" },

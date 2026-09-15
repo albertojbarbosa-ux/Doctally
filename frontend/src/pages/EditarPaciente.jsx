@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { obterPaciente, atualizarPaciente } from "../api/pacientes";
 import PacienteCampos, { pacienteVazio, pacienteParaFormulario, CAMPOS_DATA_PACIENTE } from "../components/PacienteCampos";
 import ModalAgendarPaciente from "../components/ModalAgendarPaciente";
+import Prontuario from "../components/Prontuario";
 
 export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
   const [form, setForm] = useState(pacienteVazio);
@@ -10,6 +11,7 @@ export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
   const [erro, setErro] = useState(null);
   const [mostrarAgendamento, setMostrarAgendamento] = useState(false);
   const [avisoAgendamento, setAvisoAgendamento] = useState(null);
+  const [mostrarProntuario, setMostrarProntuario] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -55,7 +57,10 @@ export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
 
       {!carregando && (
         <>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginBottom: "0.75rem" }}>
+            <button type="button" onClick={() => setMostrarProntuario(true)}>
+              Prontuário
+            </button>
             <button type="button" onClick={() => setMostrarAgendamento(true)}>
               Agendar consulta
             </button>
@@ -89,6 +94,14 @@ export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
             setMostrarAgendamento(false);
             setAvisoAgendamento("Consulta agendada com sucesso.");
           }}
+        />
+      )}
+
+      {mostrarProntuario && (
+        <Prontuario
+          pacienteId={pacienteId}
+          pacienteNome={form.nomeCompleto}
+          aoFechar={() => setMostrarProntuario(false)}
         />
       )}
     </div>
