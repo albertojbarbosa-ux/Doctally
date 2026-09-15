@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { listarAgendamentos } from "../api/agendamentos";
+import { listarAgendamentos, cancelarAgendamento } from "../api/agendamentos";
 import { gerarSlots, formatarDataISO } from "../utils/horarios";
 import ModalAgendarHorario from "./ModalAgendarHorario";
+import ModalEditarAgendamento from "./ModalEditarAgendamento";
 
 const DURACOES = [10, 15, 20, 30];
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -59,6 +60,10 @@ export default function AgendaDoDia() {
   const [duracaoConsulta, setDuracaoConsulta] = useState(30);
   const [agendamentos, setAgendamentos] = useState([]);
   const [slotSelecionado, setSlotSelecionado] = useState(null);
+  const [agendamentoEditando, setAgendamentoEditando] = useState(null);
+  const [confirmandoCancelamentoId, setConfirmandoCancelamentoId] = useState(null);
+  const [cancelando, setCancelando] = useState(null);
+  const [erroCancelamento, setErroCancelamento] = useState(null);
 
   const hoje = new Date();
   const slots = useMemo(() => gerarSlots(duracaoConsulta), [duracaoConsulta]);
@@ -75,7 +80,22 @@ export default function AgendaDoDia() {
       .catch(() => setAgendamentos([]));
   }
 
+  async function confirmarCancelamento(agendamento) {
+    setCancelando(agendamento.id);
+    setErroCancelamento(null);
+    try {
+      await cancelarAgendamento(agendamento.id);
+      setConfirmandoCancelamentoId(null);
+      recarregarAgendamentos();
+    } catch {
+      setErroCancelamento("Não foi possível cancelar. Tente novamente.");
+    } finally {
+      setCancelando(null);
+    }
+  }
+
   useEffect(() => {
+    setConfirmandoCancelamentoId(null);
     if (modo !== "dia") return;
     recarregarAgendamentos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,12 +223,68 @@ export default function AgendaDoDia() {
                 >
                   <span style={{ color: "var(--text-muted)", width: 42, flexShrink: 0 }}>{horario}</span>
                   {agendamento ? (
-                    <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
-                      <strong style={{ fontSize: "0.85rem" }}>{agendamento.pacienteNome}</strong>
-                      {agendamento.pacienteTelefone && (
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{agendamento.pacienteTelefone}</span>
-                      )}
-                    </span>
+                    confirmandoCancelamentoId === agendamento.id ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+                        <span style={{ fontSize: "0.78rem", color: "var(--text)" }}>Cancelar esta consulta?</span>
+                        <button
+                          type="button"
+                          disabled={cancelando === agendamento.id}
+                          onClick={() => confirmarCancelamento(agendamento)}
+                          style={{ background: "var(--danger)", color: "#fff", fontSize: "0.75rem", padding: "0.25rem 0.55rem" }}
+                        >
+                          {cancelando === agendamento.id ? "Cancelando..." : "Sim"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmandoCancelamentoId(null)}
+                          style={{ background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.75rem", padding: "0.25rem 0.55rem" }}
+                        >
+                          Não
+                        </button>
+                        {erroCancelamento && <span style={{ fontSize: "0.72rem", color: "var(--danger)" }}>{erroCancelamento}</span>}
+                      </span>
+                    ) : (
+                      <>
+                        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
+                          <strong style={{ fontSize: "0.85rem" }}>{agendamento.pacienteNome}</strong>
+                          {agendamento.pacienteTelefone && (
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{agendamento.pacienteTelefone}</span>
+                          )}
+                        </span>
+                        <span style={{ marginLeft: "auto", display: "flex", gap: "0.3rem", flexShrink: 0 }}>
+                          <button
+                            type="button"
+                            title="Editar horário"
+                            onClick={() => setAgendamentoEditando(agendamento)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              color: "var(--text-muted)",
+                              padding: "0.2rem",
+                              fontSize: "0.9rem",
+                              lineHeight: 1,
+                            }}
+                          >
+                            ✎
+                          </button>
+                          <button
+                            type="button"
+                            title="Cancelar consulta"
+                            onClick={() => { setErroCancelamento(null); setConfirmandoCancelamentoId(agendamento.id); }}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              color: "var(--danger)",
+                              padding: "0.2rem",
+                              fontSize: "0.9rem",
+                              lineHeight: 1,
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      </>
+                    )
                   ) : (
                     <button
                       type="button"
@@ -283,6 +359,18 @@ export default function AgendaDoDia() {
           aoFechar={() => setSlotSelecionado(null)}
           aoAgendado={() => {
             setSlotSelecionado(null);
+            recarregarAgendamentos();
+          }}
+        />
+      )}
+
+      {agendamentoEditando && (
+        <ModalEditarAgendamento
+          agendamento={agendamentoEditando}
+          dataInicial={dataAtual}
+          aoFechar={() => setAgendamentoEditando(null)}
+          aoAtualizado={() => {
+            setAgendamentoEditando(null);
             recarregarAgendamentos();
           }}
         />

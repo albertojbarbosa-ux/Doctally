@@ -59,4 +59,35 @@ public class AgendamentosController : ControllerBase
 
         return Ok(new AgendamentoResponse(agendamento.Id, paciente.Id, paciente.NomeCompleto, paciente.Telefone, agendamento.Data, agendamento.Horario, agendamento.DuracaoMinutos));
     }
+
+    // Reagenda (muda dia/horário) um agendamento existente. A duração não muda aqui.
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<AgendamentoResponse>> Atualizar(Guid id, AtualizarAgendamentoRequest request)
+    {
+        var agendamento = await _db.Agendamentos.Include(a => a.Paciente).FirstOrDefaultAsync(a => a.Id == id);
+        if (agendamento is null) return NotFound();
+
+        var jaOcupado = await _db.Agendamentos.AnyAsync(a =>
+            a.Id != id && a.Data == request.Data && a.Horario == request.Horario);
+        if (jaOcupado) return Conflict("Esse horário já está ocupado.");
+
+        agendamento.Data = request.Data;
+        agendamento.Horario = request.Horario;
+        await _db.SaveChangesAsync();
+
+        return Ok(new AgendamentoResponse(agendamento.Id, agendamento.PacienteId, agendamento.Paciente!.NomeCompleto,
+            agendamento.Paciente.Telefone, agendamento.Data, agendamento.Horario, agendamento.DuracaoMinutos));
+    }
+
+    // Cancela (remove) um agendamento — libera o horário na agenda.
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Cancelar(Guid id)
+    {
+        var agendamento = await _db.Agendamentos.FirstOrDefaultAsync(a => a.Id == id);
+        if (agendamento is null) return NotFound();
+
+        _db.Agendamentos.Remove(agendamento);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
 }

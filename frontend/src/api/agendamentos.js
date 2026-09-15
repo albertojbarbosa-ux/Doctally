@@ -28,3 +28,24 @@ export async function criarAgendamento({ pacienteId, data, horario, duracaoMinut
   }
   return res.json();
 }
+
+export async function atualizarAgendamento(id, { data, horario }) {
+  const res = await fetch(`${API_URL}/api/agendamentos/${id}`, {
+    method: "PUT",
+    headers: headers(),
+    body: JSON.stringify({ data, horario: `${horario}:00` }),
+  });
+  if (!res.ok) {
+    const texto = await res.text();
+    throw new Error(texto || "Falha ao reagendar consulta.");
+  }
+  return res.json();
+}
+
+export async function cancelarAgendamento(id) {
+  const res = await fetch(`${API_URL}/api/agendamentos/${id}`, {
+    method: "DELETE",
+    headers: headers(),
+  });
+  if (!res.ok) throw new Error("Falha ao cancelar consulta.");
+}
