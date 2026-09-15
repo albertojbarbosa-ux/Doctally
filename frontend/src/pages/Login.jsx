@@ -2,7 +2,7 @@ import { useState } from "react";
 import { login, salvarSessao } from "../api/auth";
 import LogoMark from "../assets/logo-mark.svg";
 
-export default function Login({ aoLogar, aoIrParaRegistro }) {
+export default function Login({ aoLogar, aoIrParaRegistro, aoIrParaEsqueciSenha }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState(null);
@@ -39,6 +39,13 @@ export default function Login({ aoLogar, aoIrParaRegistro }) {
             Senha
             <input type="password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
           </label>
+          <button
+            type="button"
+            onClick={aoIrParaEsqueciSenha}
+            style={{ alignSelf: "flex-end", padding: 0, background: "none", border: "none", color: "var(--text-muted)", fontSize: "0.82rem", fontWeight: 500, cursor: "pointer" }}
+          >
+            Esqueci minha senha
+          </button>
           {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
           <button type="submit" disabled={carregando}>{carregando ? "Entrando..." : "Entrar"}</button>
         </form>

@@ -24,4 +24,9 @@ public class Usuario
 
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
     public bool Ativo { get; set; } = true;
+
+    // Fluxo de "esqueci minha senha": guardamos o hash do token (nunca o valor bruto)
+    // e sua expiração. Nulos quando não há solicitação de reset em aberto.
+    public string? TokenResetSenhaHash { get; set; }
+    public DateTime? TokenResetSenhaExpiraEm { get; set; }
 }

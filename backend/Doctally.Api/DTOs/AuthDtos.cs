@@ -11,3 +11,7 @@ public record RegistrarClinicaRequest(
 public record LoginRequest(string Email, string Senha);
 
 public record LoginResponse(string Token, string Nome, string Papel, Guid ClinicaId);
+
+public record EsqueciSenhaRequest(string Email);
+
+public record RedefinirSenhaRequest(string Token, string NovaSenha);

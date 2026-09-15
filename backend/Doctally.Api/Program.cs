@@ -15,6 +15,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICurrentTenant, CurrentTenant>();
 builder.Services.AddScoped<TokenService>();
 
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
 var jwtChave = builder.Configuration["Jwt:Chave"] ?? "chave-de-desenvolvimento-trocar-em-producao";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

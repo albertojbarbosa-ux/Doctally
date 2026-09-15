@@ -23,6 +23,29 @@ export async function registrarClinica(dados) {
   return res.json();
 }
 
+export async function solicitarResetSenha(email) {
+  const res = await fetch(`${API_URL}/api/auth/esqueci-senha`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error("Não foi possível processar a solicitação. Tente novamente.");
+  return res.json();
+}
+
+export async function redefinirSenha(token, novaSenha) {
+  const res = await fetch(`${API_URL}/api/auth/redefinir-senha`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, novaSenha }),
+  });
+  if (!res.ok) {
+    const texto = await res.text();
+    throw new Error(texto || "Link de redefinição inválido ou expirado.");
+  }
+  return res.json();
+}
+
 export function salvarSessao({ token, nome, papel, clinicaId }) {
   localStorage.setItem("token", token);
   localStorage.setItem("nome", nome);
