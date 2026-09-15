@@ -21,7 +21,7 @@ function contratado(entitlements, chave) {
 
 export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitlements, children }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <aside
         style={{
           width: 232,
@@ -31,6 +31,8 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
           flexDirection: "column",
           gap: "1.5rem",
           flexShrink: 0,
+          height: "100%",
+          overflowY: "auto",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0 0.25rem" }}>
@@ -121,7 +123,7 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
         </button>
       </aside>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
         <header
           style={{
             display: "flex",
@@ -130,6 +132,7 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
             padding: "1rem 1.75rem",
             background: "var(--surface)",
             borderBottom: "1px solid var(--border)",
+            flexShrink: 0,
           }}
         >
           <div>
@@ -143,7 +146,7 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
           <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{hoje}</div>
         </header>
 
-        <main style={{ flex: 1, padding: "1.75rem", background: "var(--bg)" }}>{children}</main>
+        <main style={{ flex: 1, padding: "1.75rem", background: "var(--bg)", overflowY: "auto" }}>{children}</main>
       </div>
     </div>
   );
