@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { listarPacientes } from "../api/pacientes";
 
-export default function ListaPacientes({ aoSelecionarNovo }) {
+export default function ListaPacientes({ aoSelecionarNovo, aoSelecionarPaciente }) {
   const [pacientes, setPacientes] = useState([]);
   const [busca, setBusca] = useState("");
   const [carregando, setCarregando] = useState(true);
@@ -36,11 +36,28 @@ export default function ListaPacientes({ aoSelecionarNovo }) {
 
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {pacientes.map((p) => (
-          <li key={p.id} style={{ padding: "0.85rem 0", borderBottom: "1px solid var(--border)" }}>
-            <strong>{p.nomeCompleto}</strong>
-            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-              CPF: {p.cpf} · Nascimento: {p.dataNascimento}
-            </div>
+          <li key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
+            <button
+              type="button"
+              onClick={() => aoSelecionarPaciente(p.id)}
+              style={{
+                width: "100%",
+                textAlign: "left",
+                padding: "0.85rem 0.25rem",
+                background: "transparent",
+                border: "none",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <strong style={{ fontSize: "0.95rem" }}>{p.nomeCompleto}</strong>
+              <div style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--text-muted)" }}>
+                CPF: {p.cpf} · Nascimento: {p.dataNascimento}
+              </div>
+            </button>
           </li>
         ))}
         {!carregando && pacientes.length === 0 && <p style={{ color: "var(--text-muted)" }}>Nenhum paciente cadastrado ainda.</p>}

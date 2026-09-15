@@ -26,3 +26,19 @@ export async function criarPaciente(dados) {
   if (!res.ok) throw new Error("Falha ao criar paciente");
   return res.json();
 }
+
+export async function obterPaciente(id) {
+  const res = await fetch(`${API_URL}/api/pacientes/${id}`, { headers: headers() });
+  if (res.status === 401) throw new Error("Sessão expirada, faça login novamente.");
+  if (!res.ok) throw new Error("Falha ao carregar paciente");
+  return res.json();
+}
+
+export async function atualizarPaciente(id, dados) {
+  const res = await fetch(`${API_URL}/api/pacientes/${id}`, {
+    method: "PUT",
+    headers: headers(),
+    body: JSON.stringify(dados),
+  });
+  if (!res.ok) throw new Error("Falha ao salvar alterações do paciente");
+}

@@ -8,6 +8,7 @@ import RedefinirSenha from "./pages/RedefinirSenha";
 import Dashboard from "./pages/Dashboard";
 import ListaPacientes from "./pages/ListaPacientes";
 import NovoPaciente from "./pages/NovoPaciente";
+import EditarPaciente from "./pages/EditarPaciente";
 import Modulos from "./pages/Modulos";
 import AdminCortesia from "./pages/AdminCortesia";
 import Layout from "./components/Layout";
@@ -40,7 +41,8 @@ export default function App() {
   const [telaPublica, setTelaPublica] = useState(
     tokenResetUrl ? "redefinir" : "login"
   ); // "login" | "registro" | "esqueci" | "redefinir"
-  const [pagina, setPagina] = useState("dashboard"); // "dashboard" | "pacientes" | "novoPaciente" | "modulos" | "adminCortesia"
+  const [pagina, setPagina] = useState("dashboard"); // "dashboard" | "pacientes" | "novoPaciente" | "editarPaciente" | "modulos" | "adminCortesia"
+  const [pacienteEditandoId, setPacienteEditandoId] = useState(null);
   const [entitlements, setEntitlements] = useState([]);
   const [avisoCheckout, setAvisoCheckout] = useState(lerRetornoCheckout());
 
@@ -101,8 +103,25 @@ export default function App() {
     if (pagina === "novoPaciente") {
       return <NovoPaciente aoSalvar={() => setPagina("pacientes")} aoCancelar={() => setPagina("pacientes")} />;
     }
+    if (pagina === "editarPaciente") {
+      return (
+        <EditarPaciente
+          pacienteId={pacienteEditandoId}
+          aoSalvar={() => setPagina("pacientes")}
+          aoCancelar={() => setPagina("pacientes")}
+        />
+      );
+    }
     if (pagina === "pacientes") {
-      return <ListaPacientes aoSelecionarNovo={() => setPagina("novoPaciente")} />;
+      return (
+        <ListaPacientes
+          aoSelecionarNovo={() => setPagina("novoPaciente")}
+          aoSelecionarPaciente={(id) => {
+            setPacienteEditandoId(id);
+            setPagina("editarPaciente");
+          }}
+        />
+      );
     }
     if (pagina === "modulos") {
       return <Modulos />;
@@ -115,7 +134,7 @@ export default function App() {
 
   return (
     <Layout
-      paginaAtiva={pagina === "novoPaciente" ? "pacientes" : pagina}
+      paginaAtiva={pagina === "novoPaciente" || pagina === "editarPaciente" ? "pacientes" : pagina}
       aoNavegar={(destino) => {
         setPagina(destino);
         if (destino === "modulos") recarregarEntitlements();
