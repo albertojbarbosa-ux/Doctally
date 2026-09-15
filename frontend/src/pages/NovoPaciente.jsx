@@ -36,7 +36,6 @@ export default function NovoPaciente({ aoSalvar, aoCancelar }) {
 
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem 1.75rem", width: "100%" }}>
-      <h2 style={{ fontSize: "1.15rem", marginBottom: "0.9rem" }}>Novo paciente</h2>
       <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
         <PacienteCampos form={form} atualizar={atualizar} />
 

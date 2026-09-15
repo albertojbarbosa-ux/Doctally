@@ -1,4 +1,6 @@
 // Campos do cadastro de paciente, compartilhados entre NovoPaciente e EditarPaciente.
+import { useEffect, useRef, useState } from "react";
+import { buscarEnderecoPorCep } from "../api/cep";
 
 export const pacienteVazio = {
   // 1. Identificação pessoal
@@ -140,6 +142,47 @@ const OPCOES_TABAGISMO = [
 ];
 
 export default function PacienteCampos({ form, atualizar }) {
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepNaoEncontrado, setCepNaoEncontrado] = useState(false);
+  const primeiraRenderRef = useRef(true);
+
+  // Busca o endereço automaticamente quando o CEP é digitado (não dispara na carga
+  // inicial de um paciente já existente, pra não sobrescrever um endereço já salvo).
+  useEffect(() => {
+    if (primeiraRenderRef.current) {
+      primeiraRenderRef.current = false;
+      return;
+    }
+    const digitos = (form.cep || "").replace(/\D/g, "");
+    if (digitos.length !== 8) {
+      setCepNaoEncontrado(false);
+      return;
+    }
+
+    let cancelado = false;
+    setBuscandoCep(true);
+    setCepNaoEncontrado(false);
+    buscarEnderecoPorCep(digitos)
+      .then((endereco) => {
+        if (cancelado) return;
+        if (!endereco) {
+          setCepNaoEncontrado(true);
+          return;
+        }
+        atualizar("logradouro", endereco.logradouro);
+        atualizar("bairro", endereco.bairro);
+        atualizar("municipio", endereco.municipio);
+        atualizar("uf", endereco.uf);
+      })
+      .catch(() => {})
+      .finally(() => !cancelado && setBuscandoCep(false));
+
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.cep]);
+
   return (
     <>
       <Secao numero={1} titulo="Identificação pessoal">
@@ -211,7 +254,16 @@ export default function PacienteCampos({ form, atualizar }) {
       </Secao>
 
       <Secao numero={4} titulo="Endereço residencial">
-        <Campo label="CEP" span={2}>
+        <Campo
+          label={
+            <>
+              CEP{" "}
+              {buscandoCep && <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(buscando...)</span>}
+              {cepNaoEncontrado && <span style={{ color: "var(--danger)", fontWeight: 400 }}>(não encontrado)</span>}
+            </>
+          }
+          span={2}
+        >
           <input value={form.cep} onChange={(e) => atualizar("cep", e.target.value)} />
         </Campo>
         <Campo label="Logradouro (rua, av.)" span={5}>

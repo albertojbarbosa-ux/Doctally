@@ -48,8 +48,6 @@ export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
 
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem 1.75rem", width: "100%" }}>
-      <h2 style={{ fontSize: "1.15rem", marginBottom: "0.9rem" }}>Editar paciente</h2>
-
       {carregando && <p style={{ color: "var(--text-muted)" }}>Carregando...</p>}
 
       {!carregando && (
