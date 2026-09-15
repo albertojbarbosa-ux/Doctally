@@ -184,7 +184,7 @@ export default function AgendaDoDia() {
                   display: "flex",
                   alignItems: "center",
                   gap: "0.6rem",
-                  padding: "0.5rem 0.1rem",
+                  padding: "0.28rem 0.1rem",
                   borderBottom: "1px solid var(--border)",
                   fontSize: "0.85rem",
                 }}
