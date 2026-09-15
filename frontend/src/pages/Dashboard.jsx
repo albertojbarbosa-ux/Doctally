@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { listarPacientes } from "../api/pacientes";
+import AgendaDoDia from "../components/AgendaDoDia";
 
 function Card({ titulo, valor, legenda, cor }) {
   return (
@@ -51,7 +52,6 @@ export default function Dashboard({ aoIrParaPacientes }) {
   }, []);
 
   const semConsentimento = pacientes.filter((p) => !p.consentimentoLgpd).length;
-  const hoje = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date());
 
   return (
     <div style={{ display: "flex", gap: "1.25rem", height: "100%" }}>
@@ -103,26 +103,7 @@ export default function Dashboard({ aoIrParaPacientes }) {
         </div>
       </div>
 
-      <div
-        style={{
-          flex: "0 0 33%",
-          height: "100%",
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "1.25rem",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <h3 style={{ fontSize: "1.05rem" }}>Agenda do dia</h3>
-        <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", margin: "0.3rem 0 1rem" }}>{hoje}</p>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
-            Agenda do médico em desenvolvimento — em breve você verá aqui os horários e consultas do dia.
-          </p>
-        </div>
-      </div>
+      <AgendaDoDia />
     </div>
   );
 }
