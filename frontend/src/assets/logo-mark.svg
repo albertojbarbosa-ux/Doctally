@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <defs>
-    <linearGradient id="dtFav" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+    <linearGradient id="dtBadge" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#6FA285"/>
       <stop offset="1" stop-color="#365848"/>
     </linearGradient>
   </defs>
-  <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#dtFav)"/>
+  <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#dtBadge)"/>
   <path
     d="M6.5 22.5h6l2.3-7.6 3.4 14.6 2.9-11 1.9 4h9.5"
     stroke="#F6F1E7"
-    stroke-width="2.6"
+    stroke-width="2.2"
     stroke-linecap="round"
     stroke-linejoin="round"
     fill="none"
   />
-  <circle cx="29" cy="10.5" r="6" fill="#F5DDC3"/>
-  <path d="M29 6.9v7.2M25.4 10.5h7.2" stroke="#B85A38" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="29" cy="10.5" r="5.5" fill="#F5DDC3"/>
+  <path d="M29 7.3v6.4M25.8 10.5h6.4" stroke="#B85A38" stroke-width="1.8" stroke-linecap="round"/>
 </svg>
