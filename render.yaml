@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: doctally-api
+    runtime: docker
+    dockerfilePath: ./backend/Doctally.Api/Dockerfile
+    envVars:
+      - key: ConnectionStrings__Default
+        sync: false   # cole aqui a connection string do Neon direto no painel do Render (não versionar segredo)
+      - key: Jwt__Chave
+        sync: false   # gerar uma chave secreta forte e colar no painel do Render
+      - key: Jwt__Emissor
+        value: doctally-api
+      - key: Jwt__Audiencia
+        value: doctally-web
+      - key: FrontendUrl
+        value: https://doctally-web.onrender.com
+
+  - type: web
+    name: doctally-web
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://doctally-api.onrender.com
