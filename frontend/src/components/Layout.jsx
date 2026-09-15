@@ -1,7 +1,7 @@
 import LogoMark from "../assets/logo-mark.svg";
 
 const ITENS_NAV = [
-  { id: "dashboard", label: "Visão Geral", icone: "◎" },
+  { id: "dashboard", label: "Painel Inicial", icone: "◎" },
   { id: "pacientes", label: "Pacientes", icone: "▤" },
   { id: "prontuarios", label: "Prontuários", icone: "▥", gatilhoModulo: "prontuarios" },
   { id: "receitas", label: "Receitas", icone: "✎", gatilhoModulo: "receitas" },
@@ -135,15 +135,10 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
             flexShrink: 0,
           }}
         >
-          <div>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              Geral
-            </div>
-            <h1 style={{ fontSize: "1.3rem" }}>
-              {ITENS_NAV.find((i) => i.id === paginaAtiva)?.label ?? "Visão Geral"}
-            </h1>
-          </div>
-          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{hoje}</div>
+          <h1 style={{ fontSize: "1.3rem" }}>
+            {ITENS_NAV.find((i) => i.id === paginaAtiva)?.label ?? "Painel Inicial"}
+          </h1>
+          <div style={{ fontSize: "1.05rem", color: "var(--text-muted)" }}>{hoje}</div>
         </header>
 
         <main style={{ flex: 1, padding: "1.75rem", background: "var(--bg)", overflowY: "auto" }}>{children}</main>
