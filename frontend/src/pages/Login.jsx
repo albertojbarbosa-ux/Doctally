@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { login, salvarSessao } from "../api/auth";
+import { useEffect, useRef, useState } from "react";
+import { login, loginComGoogle, salvarSessao } from "../api/auth";
 import LogoMark from "../assets/logo-mark.svg";
+
+// Client ID do OAuth do Google não é secreto (é enviado ao navegador de qualquer forma),
+// por isso o fallback fica direto no código em vez de exigir uma variável de ambiente.
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  "293280603864-3810cpfbferfno3tjurp0ugdjgbp3oka.apps.googleusercontent.com";
 
 export default function Login({ aoLogar, aoIrParaRegistro, aoIrParaEsqueciSenha }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(false);
+  const botaoGoogleRef = useRef(null);
 
   async function enviar(e) {
     e.preventDefault();
@@ -22,6 +29,49 @@ export default function Login({ aoLogar, aoIrParaRegistro, aoIrParaEsqueciSenha 
       setCarregando(false);
     }
   }
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    async function aoReceberCredencialGoogle(resposta) {
+      setErro(null);
+      try {
+        const sessao = await loginComGoogle(resposta.credential);
+        salvarSessao(sessao);
+        aoLogar();
+      } catch (e) {
+        setErro(e.message);
+      }
+    }
+
+    let cancelado = false;
+    function tentarInicializar() {
+      if (cancelado) return;
+      if (!window.google?.accounts?.id) {
+        setTimeout(tentarInicializar, 100);
+        return;
+      }
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: aoReceberCredencialGoogle,
+      });
+      if (botaoGoogleRef.current) {
+        window.google.accounts.id.renderButton(botaoGoogleRef.current, {
+          theme: "outline",
+          size: "large",
+          width: 312,
+          text: "signin_with",
+          locale: "pt_BR",
+        });
+      }
+    }
+    tentarInicializar();
+
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
@@ -49,6 +99,18 @@ export default function Login({ aoLogar, aoIrParaRegistro, aoIrParaEsqueciSenha 
           {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
           <button type="submit" disabled={carregando}>{carregando ? "Entrando..." : "Entrar"}</button>
         </form>
+
+        {GOOGLE_CLIENT_ID && (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "1.25rem 0" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>ou</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            </div>
+            <div ref={botaoGoogleRef} style={{ display: "flex", justifyContent: "center" }} />
+          </>
+        )}
+
         <p style={{ marginTop: "1.25rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
           Ainda não tem uma clínica cadastrada?{" "}
           <button

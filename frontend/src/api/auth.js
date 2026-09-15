@@ -23,6 +23,19 @@ export async function registrarClinica(dados) {
   return res.json();
 }
 
+export async function loginComGoogle(idToken) {
+  const res = await fetch(`${API_URL}/api/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  if (!res.ok) {
+    const texto = await res.text();
+    throw new Error(texto || "Não foi possível entrar com Google.");
+  }
+  return res.json();
+}
+
 export async function solicitarResetSenha(email) {
   const res = await fetch(`${API_URL}/api/auth/esqueci-senha`, {
     method: "POST",

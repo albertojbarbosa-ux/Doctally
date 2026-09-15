@@ -83,6 +83,39 @@ public class AuthController : ControllerBase
         return Ok(new LoginResponse(token, usuario.Nome, usuario.Papel.ToString(), usuario.ClinicaId, usuario.EhSuperAdmin));
     }
 
+    // Login via "Entrar com Google": só funciona para quem já tem conta (o e-mail verificado
+    // pelo Google precisa bater com um Usuario existente). Não cria clínica nova por aqui —
+    // isso continua exigindo o formulário de cadastro (CPF/CNPJ etc, que o Google não fornece).
+    [HttpPost("google")]
+    public async Task<ActionResult<LoginResponse>> LoginGoogle(GoogleLoginRequest request)
+    {
+        Google.Apis.Auth.GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(request.IdToken, new Google.Apis.Auth.GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["Google:ClientId"] }
+            });
+        }
+        catch (Exception)
+        {
+            return Unauthorized("Token do Google inválido.");
+        }
+
+        if (!payload.EmailVerified)
+            return Unauthorized("O e-mail da conta Google não está verificado.");
+
+        var emailNormalizado = payload.Email.Trim().ToLowerInvariant();
+        var usuario = await _db.Usuarios.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == emailNormalizado && u.Ativo);
+
+        if (usuario is null)
+            return NotFound("Nenhuma conta encontrada para este e-mail. Cadastre sua clínica primeiro.");
+
+        var token = _tokenService.GerarToken(usuario);
+        return Ok(new LoginResponse(token, usuario.Nome, usuario.Papel.ToString(), usuario.ClinicaId, usuario.EhSuperAdmin));
+    }
+
     // Gera um token de reset e envia por e-mail. Sempre responde 200 com mensagem genérica
     // (mesmo se o e-mail não existir) para não permitir enumeração de usuários cadastrados.
     [HttpPost("esqueci-senha")]

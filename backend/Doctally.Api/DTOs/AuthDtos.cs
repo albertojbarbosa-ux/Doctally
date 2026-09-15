@@ -16,4 +16,6 @@ public record LoginResponse(string Token, string Nome, string Papel, Guid Clinic
 
 public record EsqueciSenhaRequest(string Email);
 
+public record GoogleLoginRequest(string IdToken);
+
 public record RedefinirSenhaRequest(string Token, string NovaSenha);
