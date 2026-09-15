@@ -40,9 +40,9 @@ export default function NovoPaciente({ aoSalvar, aoCancelar }) {
   }
 
   return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", maxWidth: 480 }}>
-      <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem" }}>Novo paciente</h2>
-      <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+    <div style={{ maxWidth: 480, margin: "0 auto", padding: "1.5rem" }}>
+      <h1 style={{ fontSize: "1.4rem" }}>Novo paciente</h1>
+      <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         <label>
           Nome completo
           <input required value={form.nomeCompleto} onChange={(e) => atualizar("nomeCompleto", e.target.value)} />
@@ -67,17 +67,16 @@ export default function NovoPaciente({ aoSalvar, aoCancelar }) {
           Convênio
           <input value={form.convenio} onChange={(e) => atualizar("convenio", e.target.value)} />
         </label>
-        <label style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "0.5rem" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <input
             type="checkbox"
             checked={form.consentimentoLgpd}
             onChange={(e) => atualizar("consentimentoLgpd", e.target.checked)}
-            style={{ width: "auto" }}
           />
-          <span>Paciente autorizou o tratamento de seus dados de saúde (LGPD)</span>
+          Paciente autorizou o tratamento de seus dados de saúde (LGPD)
         </label>
 
-        {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
+        {erro && <p style={{ color: "crimson" }}>{erro}</p>}
 
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar"}</button>

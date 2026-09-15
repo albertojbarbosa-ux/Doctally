@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { registrarClinica, salvarSessao } from "../api/auth";
-import LogoMark from "../assets/logo-mark.svg";
 
 const vazio = { nomeClinica: "", cnpj: "", nomeAdmin: "", emailAdmin: "", senha: "" };
 
@@ -29,47 +28,38 @@ export default function RegistrarClinica({ aoRegistrar, aoVoltarParaLogin }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
-      <div style={{ width: 420, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.5rem" }}>
-          <img src={LogoMark} alt="" width={32} height={32} />
-          <h1 style={{ fontSize: "1.3rem" }}>Cadastrar clínica</h1>
-        </div>
-        <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
-          <label>
-            Nome da clínica
-            <input required value={form.nomeClinica} onChange={(e) => atualizar("nomeClinica", e.target.value)} />
-          </label>
-          <label>
-            CNPJ
-            <input required value={form.cnpj} onChange={(e) => atualizar("cnpj", e.target.value)} />
-          </label>
-          <label>
-            Seu nome (administrador)
-            <input required value={form.nomeAdmin} onChange={(e) => atualizar("nomeAdmin", e.target.value)} />
-          </label>
-          <label>
-            E-mail de acesso
-            <input type="email" required value={form.emailAdmin} onChange={(e) => atualizar("emailAdmin", e.target.value)} />
-          </label>
-          <label>
-            Senha
-            <input type="password" required minLength={8} value={form.senha} onChange={(e) => atualizar("senha", e.target.value)} />
-          </label>
-          {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
-          <button type="submit" disabled={carregando}>{carregando ? "Criando..." : "Criar clínica"}</button>
-        </form>
-        <p style={{ marginTop: "1.25rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
-          Já tem conta?{" "}
-          <button
-            type="button"
-            onClick={aoVoltarParaLogin}
-            style={{ padding: 0, background: "none", border: "none", color: "var(--primary-dark)", fontWeight: 600, cursor: "pointer" }}
-          >
-            Entrar
-          </button>
-        </p>
-      </div>
+    <div style={{ maxWidth: 420, margin: "3rem auto", padding: "1.5rem" }}>
+      <h1 style={{ fontSize: "1.4rem" }}>Cadastrar clínica no Doctally</h1>
+      <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <label>
+          Nome da clínica
+          <input required value={form.nomeClinica} onChange={(e) => atualizar("nomeClinica", e.target.value)} />
+        </label>
+        <label>
+          CNPJ
+          <input required value={form.cnpj} onChange={(e) => atualizar("cnpj", e.target.value)} />
+        </label>
+        <label>
+          Seu nome (administrador)
+          <input required value={form.nomeAdmin} onChange={(e) => atualizar("nomeAdmin", e.target.value)} />
+        </label>
+        <label>
+          E-mail de acesso
+          <input type="email" required value={form.emailAdmin} onChange={(e) => atualizar("emailAdmin", e.target.value)} />
+        </label>
+        <label>
+          Senha
+          <input type="password" required minLength={8} value={form.senha} onChange={(e) => atualizar("senha", e.target.value)} />
+        </label>
+        {erro && <p style={{ color: "crimson" }}>{erro}</p>}
+        <button type="submit" disabled={carregando}>{carregando ? "Criando..." : "Criar clínica"}</button>
+      </form>
+      <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+        Já tem conta?{" "}
+        <button type="button" onClick={aoVoltarParaLogin} style={{ padding: 0, background: "none", border: "none", color: "#0645AD", cursor: "pointer" }}>
+          Entrar
+        </button>
+      </p>
     </div>
   );
 }
