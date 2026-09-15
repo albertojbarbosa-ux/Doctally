@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
   <defs>
-    <linearGradient id="dtBadge" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6FA285"/>
-      <stop offset="1" stop-color="#365848"/>
+    <linearGradient id="dtBadge" x1="3" y1="2" x2="37" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C8A73"/>
+      <stop offset="1" stop-color="#1F3A2C"/>
     </linearGradient>
   </defs>
-  <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#dtBadge)"/>
+  <rect x="1.25" y="1.25" width="37.5" height="37.5" rx="11.5" fill="url(#dtBadge)"/>
   <path
-    d="M6.5 22.5h6l2.3-7.6 3.4 14.6 2.9-11 1.9 4h9.5"
-    stroke="#F6F1E7"
-    stroke-width="2.2"
+    d="M6.5 21h5.6l2.35-7.4L18 27l3-13.4 2.1 7.4h10.4"
+    stroke="#F3F8F4"
+    stroke-width="2.1"
     stroke-linecap="round"
     stroke-linejoin="round"
     fill="none"
   />
-  <circle cx="29" cy="10.5" r="5.5" fill="#F5DDC3"/>
-  <path d="M29 7.3v6.4M25.8 10.5h6.4" stroke="#B85A38" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="29.5" cy="10" r="5.25" fill="#F0E0C9"/>
+  <path d="M29.5 7.1v5.8M26.6 10h5.8" stroke="#A8663B" stroke-width="1.7" stroke-linecap="round"/>
 </svg>

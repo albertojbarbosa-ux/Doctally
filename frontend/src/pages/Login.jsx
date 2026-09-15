@@ -77,8 +77,8 @@ export default function Login({ aoLogar, aoIrParaRegistro, aoIrParaEsqueciSenha 
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
       <div style={{ width: 360, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "2rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.5rem" }}>
-          <img src={LogoMark} alt="" width={32} height={32} />
-          <h1 style={{ fontSize: "1.3rem" }}>Doctally</h1>
+          <img src={LogoMark} alt="" width={36} height={36} />
+          <h1 style={{ fontFamily: "var(--font-brand)", fontSize: "2.1rem", fontWeight: 700, color: "var(--primary-dark)", lineHeight: 1 }}>Doctally</h1>
         </div>
         <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
           <label>

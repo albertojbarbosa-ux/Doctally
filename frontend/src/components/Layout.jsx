@@ -35,7 +35,7 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitle
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0 0.25rem" }}>
           <img src={LogoMark} alt="" width={34} height={34} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 600, color: "var(--primary-dark)" }}>
+          <span style={{ fontFamily: "var(--font-brand)", fontSize: "1.9rem", fontWeight: 700, color: "#FFFFFF", lineHeight: 1 }}>
             Doctally
           </span>
         </div>
