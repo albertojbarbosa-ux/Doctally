@@ -1,19 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { listarAgendamentos } from "../api/agendamentos";
+import { gerarSlots, formatarDataISO } from "../utils/horarios";
+import ModalAgendarHorario from "./ModalAgendarHorario";
 
 const DURACOES = [10, 15, 20, 30];
-const INICIO_EXPEDIENTE_MIN = 8 * 60; // 08:00
-const FIM_EXPEDIENTE_MIN = 18 * 60; // 18:00
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-function gerarSlots(duracaoMin) {
-  const slots = [];
-  for (let m = INICIO_EXPEDIENTE_MIN; m < FIM_EXPEDIENTE_MIN; m += duracaoMin) {
-    const h = String(Math.floor(m / 60)).padStart(2, "0");
-    const mm = String(m % 60).padStart(2, "0");
-    slots.push(`${h}:${mm}`);
-  }
-  return slots;
-}
 
 function mesmoDia(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -66,10 +57,29 @@ export default function AgendaDoDia() {
   const [modo, setModo] = useState("dia"); // "dia" | "mes"
   const [dataAtual, setDataAtual] = useState(new Date());
   const [duracaoConsulta, setDuracaoConsulta] = useState(30);
+  const [agendamentos, setAgendamentos] = useState([]);
+  const [slotSelecionado, setSlotSelecionado] = useState(null);
 
   const hoje = new Date();
   const slots = useMemo(() => gerarSlots(duracaoConsulta), [duracaoConsulta]);
   const semanas = useMemo(() => (modo === "mes" ? gerarSemanasDoMes(dataAtual) : []), [modo, dataAtual]);
+  const agendamentosPorHorario = useMemo(() => {
+    const mapa = new Map();
+    for (const a of agendamentos) mapa.set(a.horario, a);
+    return mapa;
+  }, [agendamentos]);
+
+  function recarregarAgendamentos() {
+    listarAgendamentos(formatarDataISO(dataAtual))
+      .then(setAgendamentos)
+      .catch(() => setAgendamentos([]));
+  }
+
+  useEffect(() => {
+    if (modo !== "dia") return;
+    recarregarAgendamentos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modo, dataAtual]);
 
   function navegar(direcao) {
     setDataAtual((d) => {
@@ -177,22 +187,48 @@ export default function AgendaDoDia() {
       <div style={{ flex: 1, overflowY: "auto" }}>
         {modo === "dia" ? (
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column" }}>
-            {slots.map((horario) => (
-              <li
-                key={horario}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.6rem",
-                  padding: "0.28rem 0.1rem",
-                  borderBottom: "1px solid var(--border)",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <span style={{ color: "var(--text-muted)", width: 42, flexShrink: 0 }}>{horario}</span>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Disponível</span>
-              </li>
-            ))}
+            {slots.map((horario) => {
+              const agendamento = agendamentosPorHorario.get(horario);
+              return (
+                <li
+                  key={horario}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    padding: "0.28rem 0.1rem",
+                    borderBottom: "1px solid var(--border)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  <span style={{ color: "var(--text-muted)", width: 42, flexShrink: 0 }}>{horario}</span>
+                  {agendamento ? (
+                    <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
+                      <strong style={{ fontSize: "0.85rem" }}>{agendamento.pacienteNome}</strong>
+                      {agendamento.pacienteTelefone && (
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{agendamento.pacienteTelefone}</span>
+                      )}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSlotSelecionado(horario)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--text-muted)",
+                        fontSize: "0.8rem",
+                        fontWeight: 400,
+                        padding: 0,
+                        textAlign: "left",
+                      }}
+                    >
+                      Disponível
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
@@ -238,6 +274,19 @@ export default function AgendaDoDia() {
           </table>
         )}
       </div>
+
+      {slotSelecionado && (
+        <ModalAgendarHorario
+          data={dataAtual}
+          horario={slotSelecionado}
+          duracaoMinutos={duracaoConsulta}
+          aoFechar={() => setSlotSelecionado(null)}
+          aoAgendado={() => {
+            setSlotSelecionado(null);
+            recarregarAgendamentos();
+          }}
+        />
+      )}
     </div>
   );
 }

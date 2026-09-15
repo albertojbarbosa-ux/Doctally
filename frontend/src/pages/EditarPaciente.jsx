@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { obterPaciente, atualizarPaciente } from "../api/pacientes";
 import PacienteCampos, { pacienteVazio, pacienteParaFormulario, CAMPOS_DATA_PACIENTE } from "../components/PacienteCampos";
+import ModalAgendarPaciente from "../components/ModalAgendarPaciente";
 
 export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
   const [form, setForm] = useState(pacienteVazio);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState(null);
+  const [mostrarAgendamento, setMostrarAgendamento] = useState(false);
+  const [avisoAgendamento, setAvisoAgendamento] = useState(null);
 
   useEffect(() => {
     let ativo = true;
@@ -51,16 +54,42 @@ export default function EditarPaciente({ pacienteId, aoSalvar, aoCancelar }) {
       {carregando && <p style={{ color: "var(--text-muted)" }}>Carregando...</p>}
 
       {!carregando && (
-        <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
-          <PacienteCampos form={form} atualizar={atualizar} />
-
-          {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
-
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button>
-            <button type="button" onClick={aoCancelar}>Cancelar</button>
+        <>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "0.75rem" }}>
+            <button type="button" onClick={() => setMostrarAgendamento(true)}>
+              Agendar consulta
+            </button>
           </div>
-        </form>
+
+          {avisoAgendamento && (
+            <p style={{ background: "var(--primary-soft)", color: "var(--text)", borderRadius: 8, padding: "0.6rem 0.85rem", fontSize: "0.85rem", margin: "0 0 1rem" }}>
+              {avisoAgendamento}
+            </p>
+          )}
+
+          <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+            <PacienteCampos form={form} atualizar={atualizar} />
+
+            {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
+
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button>
+              <button type="button" onClick={aoCancelar}>Cancelar</button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {mostrarAgendamento && (
+        <ModalAgendarPaciente
+          pacienteId={pacienteId}
+          pacienteNome={form.nomeCompleto}
+          aoFechar={() => setMostrarAgendamento(false)}
+          aoAgendado={() => {
+            setMostrarAgendamento(false);
+            setAvisoAgendamento("Consulta agendada com sucesso.");
+          }}
+        />
       )}
     </div>
   );

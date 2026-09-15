@@ -3,6 +3,7 @@ using System;
 using Doctally.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Doctally.Api.Migrations
 {
     [DbContext(typeof(DoctallyDbContext))]
-    partial class DoctallyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915193811_AdicionaAgendamentos")]
+    partial class AdicionaAgendamentos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

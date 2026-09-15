@@ -31,6 +31,7 @@ public class DoctallyDbContext : DbContext
     public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
     public DbSet<Modulo> Modulos => Set<Modulo>();
     public DbSet<ClinicaModulo> ClinicaModulos => Set<ClinicaModulo>();
+    public DbSet<Agendamento> Agendamentos => Set<Agendamento>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,12 +43,16 @@ public class DoctallyDbContext : DbContext
         modelBuilder.Entity<Atendimento>().HasQueryFilter(a => a.ClinicaId == _currentTenant.ClinicaId);
         modelBuilder.Entity<Usuario>().HasQueryFilter(u => u.ClinicaId == _currentTenant.ClinicaId);
         modelBuilder.Entity<ClinicaModulo>().HasQueryFilter(cm => cm.ClinicaId == _currentTenant.ClinicaId);
+        modelBuilder.Entity<Agendamento>().HasQueryFilter(a => a.ClinicaId == _currentTenant.ClinicaId);
 
         modelBuilder.Entity<Paciente>().HasIndex(p => new { p.ClinicaId, p.Cpf }).IsUnique();
         modelBuilder.Entity<Usuario>().HasIndex(u => new { u.ClinicaId, u.Email }).IsUnique();
 
         modelBuilder.Entity<ClinicaModulo>().HasIndex(cm => new { cm.ClinicaId, cm.ModuloId }).IsUnique();
         modelBuilder.Entity<Modulo>().HasIndex(m => m.Chave).IsUnique();
+
+        // Evita dois agendamentos no mesmo horário na mesma clínica.
+        modelBuilder.Entity<Agendamento>().HasIndex(a => new { a.ClinicaId, a.Data, a.Horario }).IsUnique();
 
         // Índices únicos parciais: CPF/CNPJ só precisam ser únicos quando preenchidos
         // (uma clínica pessoa física não tem CNPJ, e vice-versa).
