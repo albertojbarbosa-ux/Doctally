@@ -20,32 +20,30 @@ export default function ListaPacientes({ aoSelecionarNovo }) {
   }, [busca]);
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "1.5rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1 style={{ fontSize: "1.4rem" }}>Pacientes</h1>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <input
+          placeholder="Buscar por nome ou CPF"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          style={{ width: 280 }}
+        />
         <button onClick={aoSelecionarNovo}>+ Novo paciente</button>
       </header>
 
-      <input
-        placeholder="Buscar por nome ou CPF"
-        value={busca}
-        onChange={(e) => setBusca(e.target.value)}
-        style={{ width: "100%", padding: "0.5rem", margin: "1rem 0" }}
-      />
+      {carregando && <p style={{ color: "var(--text-muted)" }}>Carregando...</p>}
+      {erro && <p style={{ color: "var(--danger)" }}>{erro}</p>}
 
-      {carregando && <p>Carregando...</p>}
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
-
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {pacientes.map((p) => (
-          <li key={p.id} style={{ padding: "0.75rem 0", borderBottom: "1px solid #ddd" }}>
+          <li key={p.id} style={{ padding: "0.85rem 0", borderBottom: "1px solid var(--border)" }}>
             <strong>{p.nomeCompleto}</strong>
-            <div style={{ fontSize: "0.85rem", color: "#555" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
               CPF: {p.cpf} · Nascimento: {p.dataNascimento}
             </div>
           </li>
         ))}
-        {!carregando && pacientes.length === 0 && <p>Nenhum paciente cadastrado ainda.</p>}
+        {!carregando && pacientes.length === 0 && <p style={{ color: "var(--text-muted)" }}>Nenhum paciente cadastrado ainda.</p>}
       </ul>
     </div>
   );
