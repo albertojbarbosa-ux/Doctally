@@ -3,15 +3,23 @@ import LogoMark from "../assets/logo-mark.svg";
 const ITENS_NAV = [
   { id: "dashboard", label: "Visão Geral", icone: "◎" },
   { id: "pacientes", label: "Pacientes", icone: "▤" },
-  { id: "prontuarios", label: "Prontuários", icone: "▥", emBreve: true },
-  { id: "receitas", label: "Receitas", icone: "✎", emBreve: true },
-  { id: "faturamento", label: "Faturamento", icone: "$", emBreve: true },
+  { id: "prontuarios", label: "Prontuários", icone: "▥", gatilhoModulo: "prontuarios" },
+  { id: "receitas", label: "Receitas", icone: "✎", gatilhoModulo: "receitas" },
+  { id: "faturamento", label: "Faturamento", icone: "$", gatilhoModulo: "faturamento" },
+  { id: "modulos", label: "Módulos", icone: "▧" },
   { id: "configuracoes", label: "Configurações", icone: "⚙", emBreve: true },
 ];
 
 const hoje = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date());
 
-export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, children }) {
+// Um item com gatilhoModulo é "contratável": mostra cadeado quando a clínica não tem o
+// módulo, mas continua clicável (leva para a página de Módulos em vez de ficar inerte).
+function contratado(entitlements, chave) {
+  const item = entitlements?.find((m) => m.chave === chave);
+  return item?.status === "Contratado" || item?.status === "Cortesia";
+}
+
+export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, entitlements, children }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
@@ -49,13 +57,15 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, childre
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
           {ITENS_NAV.map((item) => {
             const ativo = paginaAtiva === item.id;
+            const bloqueadoPorModulo = item.gatilhoModulo && !contratado(entitlements, item.gatilhoModulo);
+            const destino = bloqueadoPorModulo ? "modulos" : item.id;
             return (
               <button
                 key={item.id}
                 type="button"
                 disabled={item.emBreve}
-                onClick={() => aoNavegar(item.id)}
-                title={item.emBreve ? "Em breve" : undefined}
+                onClick={() => aoNavegar(destino)}
+                title={item.emBreve ? "Em breve" : bloqueadoPorModulo ? "Módulo não contratado — clique para assinar" : undefined}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -78,15 +88,34 @@ export default function Layout({ paginaAtiva, aoNavegar, sessao, aoSair, childre
                 {item.emBreve && (
                   <span style={{ marginLeft: "auto", fontSize: "0.65rem", color: "var(--text-muted)" }}>em breve</span>
                 )}
+                {bloqueadoPorModulo && (
+                  <span style={{ marginLeft: "auto", fontSize: "0.7rem", color: "var(--accent)" }}>🔒</span>
+                )}
               </button>
             );
           })}
         </nav>
 
+        {sessao.ehSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => aoNavegar("adminCortesia")}
+            style={{
+              textAlign: "left",
+              background: paginaAtiva === "adminCortesia" ? "var(--sidebar-active-bg)" : "transparent",
+              color: "var(--sidebar-text)",
+              border: "1px dashed var(--border)",
+              fontSize: "0.8rem",
+            }}
+          >
+            ⚙ Admin — cortesias
+          </button>
+        )}
+
         <button
           type="button"
           onClick={aoSair}
-          style={{ marginTop: "auto", textAlign: "left", color: "var(--danger)", border: "none", background: "transparent", padding: "0.5rem 0.75rem" }}
+          style={{ marginTop: sessao.ehSuperAdmin ? 0 : "auto", textAlign: "left", color: "var(--danger)", border: "none", background: "transparent", padding: "0.5rem 0.75rem" }}
         >
           Sair
         </button>

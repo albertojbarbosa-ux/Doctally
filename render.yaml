@@ -14,6 +14,18 @@ services:
         value: doctally-web
       - key: FrontendUrl
         value: https://doctally-web.onrender.com
+      - key: Smtp__Host
+        sync: false   # ex: smtp.resend.com
+      - key: Smtp__Usuario
+        sync: false   # ex: resend
+      - key: Smtp__Senha
+        sync: false   # API key do provedor SMTP
+      - key: Stripe__SecretKey
+        sync: false
+      - key: Stripe__PublishableKey
+        sync: false
+      - key: Stripe__WebhookSecret
+        sync: false
 
   - type: web
     name: doctally-web

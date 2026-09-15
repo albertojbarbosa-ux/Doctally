@@ -46,11 +46,12 @@ export async function redefinirSenha(token, novaSenha) {
   return res.json();
 }
 
-export function salvarSessao({ token, nome, papel, clinicaId }) {
+export function salvarSessao({ token, nome, papel, clinicaId, ehSuperAdmin }) {
   localStorage.setItem("token", token);
   localStorage.setItem("nome", nome);
   localStorage.setItem("papel", papel);
   localStorage.setItem("clinicaAtivaId", clinicaId);
+  localStorage.setItem("ehSuperAdmin", ehSuperAdmin ? "1" : "0");
 }
 
 export function sessaoAtual() {
@@ -61,6 +62,7 @@ export function sessaoAtual() {
     nome: localStorage.getItem("nome"),
     papel: localStorage.getItem("papel"),
     clinicaId: localStorage.getItem("clinicaAtivaId"),
+    ehSuperAdmin: localStorage.getItem("ehSuperAdmin") === "1",
   };
 }
 
@@ -69,4 +71,5 @@ export function sair() {
   localStorage.removeItem("nome");
   localStorage.removeItem("papel");
   localStorage.removeItem("clinicaAtivaId");
+  localStorage.removeItem("ehSuperAdmin");
 }

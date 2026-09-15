@@ -5,6 +5,7 @@ using Doctally.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,10 +14,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ICurrentTenant, CurrentTenant>();
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<Doctally.Api.Services.TokenService>();
 
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
 
 var jwtChave = builder.Configuration["Jwt:Chave"] ?? "chave-de-desenvolvimento-trocar-em-producao";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,9 +36,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Emissor"],
             ValidAudience = builder.Configuration["Jwt:Audiencia"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtChave)),
+            // A claim "papel" já existe no token — reaproveitar como role padrão do ASP.NET
+            // habilita [Authorize(Roles = "Admin")] sem precisar duplicar a informação.
+            RoleClaimType = "papel",
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy => policy.RequireClaim("super_admin", "true"));
+});
 
 builder.Services.AddDbContext<DoctallyDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));

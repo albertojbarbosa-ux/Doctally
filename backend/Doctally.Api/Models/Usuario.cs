@@ -29,4 +29,8 @@ public class Usuario
     // e sua expiração. Nulos quando não há solicitação de reset em aberto.
     public string? TokenResetSenhaHash { get; set; }
     public DateTime? TokenResetSenhaExpiraEm { get; set; }
+
+    // Equipe da plataforma Doctally (não é um papel de clínica) — só setável direto no banco.
+    // Dá acesso aos endpoints /api/admin/* (gerenciar módulos/cortesias entre clínicas).
+    public bool EhSuperAdmin { get; set; } = false;
 }

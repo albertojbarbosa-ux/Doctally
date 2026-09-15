@@ -33,10 +33,20 @@ public class AuthController : ControllerBase
             .AnyAsync(u => u.Email == request.EmailAdmin);
         if (emailJaExiste) return Conflict("Já existe um usuário com esse e-mail.");
 
+        if (!Enum.TryParse<TipoPessoa>(request.TipoPessoa, ignoreCase: true, out var tipoPessoa))
+            return BadRequest("TipoPessoa deve ser 'Fisica' ou 'Juridica'.");
+
+        if (tipoPessoa == TipoPessoa.Juridica && string.IsNullOrWhiteSpace(request.Cnpj))
+            return BadRequest("CNPJ é obrigatório para clínica pessoa jurídica.");
+        if (tipoPessoa == TipoPessoa.Fisica && string.IsNullOrWhiteSpace(request.Cpf))
+            return BadRequest("CPF é obrigatório para clínica pessoa física.");
+
         var clinica = new Clinica
         {
             Nome = request.NomeClinica,
-            Cnpj = request.Cnpj,
+            TipoPessoa = tipoPessoa,
+            Cnpj = tipoPessoa == TipoPessoa.Juridica ? request.Cnpj : null,
+            Cpf = tipoPessoa == TipoPessoa.Fisica ? request.Cpf : null,
         };
         _db.Clinicas.Add(clinica);
 
@@ -53,7 +63,7 @@ public class AuthController : ControllerBase
         await _db.SaveChangesAsync();
 
         var token = _tokenService.GerarToken(admin);
-        return Ok(new LoginResponse(token, admin.Nome, admin.Papel.ToString(), admin.ClinicaId));
+        return Ok(new LoginResponse(token, admin.Nome, admin.Papel.ToString(), admin.ClinicaId, admin.EhSuperAdmin));
     }
 
     [HttpPost("login")]
@@ -67,7 +77,7 @@ public class AuthController : ControllerBase
             return Unauthorized("E-mail ou senha inválidos.");
 
         var token = _tokenService.GerarToken(usuario);
-        return Ok(new LoginResponse(token, usuario.Nome, usuario.Papel.ToString(), usuario.ClinicaId));
+        return Ok(new LoginResponse(token, usuario.Nome, usuario.Papel.ToString(), usuario.ClinicaId, usuario.EhSuperAdmin));
     }
 
     // Gera um token de reset e envia por e-mail. Sempre responde 200 com mensagem genérica

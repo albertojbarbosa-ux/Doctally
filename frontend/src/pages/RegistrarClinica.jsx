@@ -2,7 +2,7 @@ import { useState } from "react";
 import { registrarClinica, salvarSessao } from "../api/auth";
 import LogoMark from "../assets/logo-mark.svg";
 
-const vazio = { nomeClinica: "", cnpj: "", nomeAdmin: "", emailAdmin: "", senha: "" };
+const vazio = { nomeClinica: "", tipoPessoa: "Juridica", cnpj: "", cpf: "", nomeAdmin: "", emailAdmin: "", senha: "" };
 
 export default function RegistrarClinica({ aoRegistrar, aoVoltarParaLogin }) {
   const [form, setForm] = useState(vazio);
@@ -40,10 +40,49 @@ export default function RegistrarClinica({ aoRegistrar, aoVoltarParaLogin }) {
             Nome da clínica
             <input required value={form.nomeClinica} onChange={(e) => atualizar("nomeClinica", e.target.value)} />
           </label>
-          <label>
-            CNPJ
-            <input required value={form.cnpj} onChange={(e) => atualizar("cnpj", e.target.value)} />
-          </label>
+
+          <div>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Tipo de cadastro</span>
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.35rem" }}>
+              <button
+                type="button"
+                onClick={() => atualizar("tipoPessoa", "Juridica")}
+                style={{
+                  flex: 1,
+                  background: form.tipoPessoa === "Juridica" ? "var(--primary)" : "transparent",
+                  color: form.tipoPessoa === "Juridica" ? "#fff" : "var(--text-muted)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                Pessoa jurídica (CNPJ)
+              </button>
+              <button
+                type="button"
+                onClick={() => atualizar("tipoPessoa", "Fisica")}
+                style={{
+                  flex: 1,
+                  background: form.tipoPessoa === "Fisica" ? "var(--primary)" : "transparent",
+                  color: form.tipoPessoa === "Fisica" ? "#fff" : "var(--text-muted)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                Pessoa física (CPF)
+              </button>
+            </div>
+          </div>
+
+          {form.tipoPessoa === "Juridica" ? (
+            <label>
+              CNPJ
+              <input required value={form.cnpj} onChange={(e) => atualizar("cnpj", e.target.value)} />
+            </label>
+          ) : (
+            <label>
+              CPF
+              <input required value={form.cpf} onChange={(e) => atualizar("cpf", e.target.value)} />
+            </label>
+          )}
+
           <label>
             Seu nome (administrador)
             <input required value={form.nomeAdmin} onChange={(e) => atualizar("nomeAdmin", e.target.value)} />

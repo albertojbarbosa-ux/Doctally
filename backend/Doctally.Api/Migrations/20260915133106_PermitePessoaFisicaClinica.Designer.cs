@@ -3,6 +3,7 @@ using System;
 using Doctally.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Doctally.Api.Migrations
 {
     [DbContext(typeof(DoctallyDbContext))]
-    partial class DoctallyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915133106_PermitePessoaFisicaClinica")]
+    partial class PermitePessoaFisicaClinica
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,35 +233,6 @@ namespace Doctally.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Modulos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Ativo = true,
-                            Chave = "prontuarios",
-                            Descricao = "Prontuário e anamnese estruturada por atendimento.",
-                            Nome = "Prontuário Eletrônico",
-                            PrecoMensalCentavos = 9900
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Ativo = true,
-                            Chave = "receitas",
-                            Descricao = "Emissão de receituário simples e controlado.",
-                            Nome = "Receituário",
-                            PrecoMensalCentavos = 9900
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            Ativo = true,
-                            Chave = "faturamento",
-                            Descricao = "Faturamento de consultas e convênios.",
-                            Nome = "Faturamento",
-                            PrecoMensalCentavos = 14900
-                        });
                 });
 
             modelBuilder.Entity("Doctally.Api.Models.Paciente", b =>

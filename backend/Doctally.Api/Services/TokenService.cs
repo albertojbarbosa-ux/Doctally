@@ -31,6 +31,11 @@ public class TokenService
             new("nome", usuario.Nome),
         };
 
+        if (usuario.EhSuperAdmin)
+        {
+            claims.Add(new Claim("super_admin", "true"));
+        }
+
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Emissor"],
             audience: _config["Jwt:Audiencia"],
