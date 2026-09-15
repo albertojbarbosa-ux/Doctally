@@ -29,8 +29,9 @@ public class AuthController : ControllerBase
     [HttpPost("registrar-clinica")]
     public async Task<ActionResult<LoginResponse>> RegistrarClinica(RegistrarClinicaRequest request)
     {
+        var emailNormalizado = request.EmailAdmin.Trim().ToLowerInvariant();
         var emailJaExiste = await _db.Usuarios.IgnoreQueryFilters()
-            .AnyAsync(u => u.Email == request.EmailAdmin);
+            .AnyAsync(u => u.Email.ToLower() == emailNormalizado);
         if (emailJaExiste) return Conflict("Já existe um usuário com esse e-mail.");
 
         if (!Enum.TryParse<TipoPessoa>(request.TipoPessoa, ignoreCase: true, out var tipoPessoa))
@@ -54,7 +55,7 @@ public class AuthController : ControllerBase
         {
             ClinicaId = clinica.Id,
             Nome = request.NomeAdmin,
-            Email = request.EmailAdmin,
+            Email = emailNormalizado,
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(request.Senha),
             Papel = PapelUsuario.Admin,
         };
@@ -70,8 +71,10 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         // IgnoreQueryFilters: no login ainda não sabemos a clínica do usuário, então buscamos pelo e-mail globalmente.
+        // Comparação case-insensitive: e-mail não deve depender de maiúsculas/minúsculas.
+        var emailNormalizado = request.Email.Trim().ToLowerInvariant();
         var usuario = await _db.Usuarios.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Ativo);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == emailNormalizado && u.Ativo);
 
         if (usuario is null || !BCrypt.Net.BCrypt.Verify(request.Senha, usuario.SenhaHash))
             return Unauthorized("E-mail ou senha inválidos.");
@@ -85,8 +88,9 @@ public class AuthController : ControllerBase
     [HttpPost("esqueci-senha")]
     public async Task<IActionResult> EsqueciSenha(EsqueciSenhaRequest request)
     {
+        var emailNormalizado = request.Email.Trim().ToLowerInvariant();
         var usuario = await _db.Usuarios.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Ativo);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == emailNormalizado && u.Ativo);
 
         if (usuario is not null)
         {

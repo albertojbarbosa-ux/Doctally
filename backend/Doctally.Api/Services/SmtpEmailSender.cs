@@ -30,7 +30,7 @@ public class SmtpEmailSender : IEmailSender
 
         var mensagem = new MimeMessage();
         mensagem.From.Add(new MailboxAddress(_options.RemetenteNome, _options.RemetenteEmail));
-        mensagem.To.Add(new MailboxAddress(destinatarioNome, destinatarioEmail));
+        mensagem.To.Add(new MailboxAddress(destinatarioNome, destinatarioEmail.Trim().ToLowerInvariant()));
         mensagem.Subject = "Redefinição de senha - Doctally";
         mensagem.Body = new TextPart("html")
         {
@@ -43,13 +43,24 @@ public class SmtpEmailSender : IEmailSender
                 """
         };
 
-        using var cliente = new SmtpClient();
-        await cliente.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
-        if (!string.IsNullOrWhiteSpace(_options.Usuario))
+        try
         {
-            await cliente.AuthenticateAsync(_options.Usuario, _options.Senha);
+            using var cliente = new SmtpClient();
+            await cliente.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
+            if (!string.IsNullOrWhiteSpace(_options.Usuario))
+            {
+                await cliente.AuthenticateAsync(_options.Usuario, _options.Senha);
+            }
+            await cliente.SendAsync(mensagem);
+            await cliente.DisconnectAsync(true);
         }
-        await cliente.SendAsync(mensagem);
-        await cliente.DisconnectAsync(true);
+        catch (Exception ex)
+        {
+            // Falha no envio nunca deve derrubar a requisição (e nunca expor detalhes de SMTP
+            // pro cliente) — o endpoint sempre responde com a mensagem genérica de sucesso.
+            _logger.LogError(ex,
+                "Falha ao enviar e-mail de reset de senha para {Email}. Link: {Link}",
+                destinatarioEmail, linkReset);
+        }
     }
 }
