@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import LogoMark from "../assets/logo-mark.svg";
 import { listarMovimentosPaciente } from "../api/pacientes";
+import AssistenteAnamnese from "./AssistenteAnamnese";
 
 const SECOES = [
   { id: "anamnese", label: "Anamnese", icone: "◉" },
@@ -178,9 +179,9 @@ export default function Prontuario({ pacienteId, pacienteNome, aoFechar }) {
         </header>
 
         <main style={{ flex: 1, padding: "1.75rem", overflowY: "auto" }}>
-          {secaoAtiva === "movimentos" ? (
-            <Movimentos pacienteId={pacienteId} />
-          ) : (
+          {secaoAtiva === "movimentos" && <Movimentos pacienteId={pacienteId} />}
+          {secaoAtiva === "anamnese" && <AssistenteAnamnese pacienteId={pacienteId} />}
+          {secaoAtiva !== "movimentos" && secaoAtiva !== "anamnese" && (
             <ConteudoSecao titulo={SECOES.find((s) => s.id === secaoAtiva)?.label} />
           )}
         </main>

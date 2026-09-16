@@ -1,4 +1,5 @@
 using System.Text;
+using Anthropic;
 using Doctally.Api.Data;
 using Doctally.Api.Middleware;
 using Doctally.Api.Services;
@@ -22,6 +23,9 @@ builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
+
+builder.Services.AddSingleton(new AnthropicClient { ApiKey = builder.Configuration["Anthropic:ApiKey"] });
+builder.Services.AddScoped<IAnamneseIaService, AnthropicAnamneseIaService>();
 
 var jwtChave = builder.Configuration["Jwt:Chave"] ?? "chave-de-desenvolvimento-trocar-em-producao";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

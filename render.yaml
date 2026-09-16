@@ -26,6 +26,8 @@ services:
         sync: false
       - key: Stripe__WebhookSecret
         sync: false
+      - key: Anthropic__ApiKey
+        sync: false   # gerar em console.anthropic.com e colar no painel do Render (não versionar segredo)
 
   - type: web
     name: doctally-web
