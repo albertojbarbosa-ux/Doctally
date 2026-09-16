@@ -31,6 +31,11 @@ var jwtChave = builder.Configuration["Jwt:Chave"] ?? "chave-de-desenvolvimento-t
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Sem isso, o handler remapeia claims padrão do JWT (ex.: "sub" vira o URI legado
+        // ClaimTypes.NameIdentifier) e User.FindFirst(JwtRegisteredClaimNames.Sub) sempre
+        // retorna null — o que corrompia silenciosamente UsuarioId em LogAuditoria (sem FK,
+        // nunca dava erro) e quebrava com 500 em qualquer entidade com FK para Usuarios.
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
