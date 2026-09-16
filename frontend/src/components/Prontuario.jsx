@@ -1,12 +1,65 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LogoMark from "../assets/logo-mark.svg";
+import { listarMovimentosPaciente } from "../api/pacientes";
 
 const SECOES = [
   { id: "anamnese", label: "Anamnese", icone: "◉" },
   { id: "exames", label: "Exames", icone: "▥" },
   { id: "procedimentos", label: "Procedimentos", icone: "✚" },
   { id: "receitas", label: "Receitas", icone: "✎" },
+  { id: "movimentos", label: "Últimos movimentos", icone: "↻" },
 ];
+
+const LABEL_ACAO = {
+  LEITURA_PACIENTE: "Visualização do cadastro",
+  CRIACAO_PACIENTE: "Criação do cadastro",
+  EDICAO_PACIENTE: "Edição do cadastro",
+};
+
+function Movimentos({ pacienteId }) {
+  const [movimentos, setMovimentos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    listarMovimentosPaciente(pacienteId)
+      .then(setMovimentos)
+      .catch((e) => setErro(e.message))
+      .finally(() => setCarregando(false));
+  }, [pacienteId]);
+
+  if (carregando) return <p style={{ color: "var(--text-muted)" }}>Carregando...</p>;
+  if (erro) return <p style={{ color: "var(--danger)" }}>{erro}</p>;
+  if (movimentos.length === 0) return <p style={{ color: "var(--text-muted)" }}>Nenhum movimento registrado ainda.</p>;
+
+  return (
+    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+      {movimentos.map((m) => (
+        <li
+          key={m.id}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: "1rem",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            padding: "0.75rem 1rem",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "0.9rem" }}>{LABEL_ACAO[m.acao] ?? m.acao}</div>
+            <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{m.usuarioNome ?? "Usuário removido"}</div>
+          </div>
+          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+            {new Date(m.ocorridoEm).toLocaleString("pt-BR")}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function ConteudoSecao({ titulo }) {
   return (
@@ -125,7 +178,11 @@ export default function Prontuario({ pacienteId, pacienteNome, aoFechar }) {
         </header>
 
         <main style={{ flex: 1, padding: "1.75rem", overflowY: "auto" }}>
-          <ConteudoSecao titulo={SECOES.find((s) => s.id === secaoAtiva)?.label} />
+          {secaoAtiva === "movimentos" ? (
+            <Movimentos pacienteId={pacienteId} />
+          ) : (
+            <ConteudoSecao titulo={SECOES.find((s) => s.id === secaoAtiva)?.label} />
+          )}
         </main>
       </div>
     </div>

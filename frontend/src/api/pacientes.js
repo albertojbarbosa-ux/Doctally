@@ -42,3 +42,10 @@ export async function atualizarPaciente(id, dados) {
   });
   if (!res.ok) throw new Error("Falha ao salvar alterações do paciente");
 }
+
+export async function listarMovimentosPaciente(id) {
+  const res = await fetch(`${API_URL}/api/pacientes/${id}/auditoria`, { headers: headers() });
+  if (res.status === 401) throw new Error("Sessão expirada, faça login novamente.");
+  if (!res.ok) throw new Error("Falha ao carregar movimentos do paciente");
+  return res.json();
+}

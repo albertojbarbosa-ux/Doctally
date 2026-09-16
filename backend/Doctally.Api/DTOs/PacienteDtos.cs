@@ -108,3 +108,10 @@ public record PacienteResponse(
     string? CirurgiasInternacoes,
     bool ConsentimentoLgpd
 );
+
+public record MovimentoPacienteResponse(
+    Guid Id,
+    string Acao,
+    DateTime OcorridoEm,
+    string? UsuarioNome
+);

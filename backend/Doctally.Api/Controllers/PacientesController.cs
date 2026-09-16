@@ -117,6 +117,32 @@ public class PacientesController : ControllerBase
         return CreatedAtAction(nameof(ObterPorId), new { id = paciente.Id }, ParaResponse(paciente));
     }
 
+    // Resgata os últimos movimentos (leituras/edições) registrados no log de auditoria
+    // do paciente — exigência LGPD de rastreabilidade de acesso ao prontuário.
+    [HttpGet("{id:guid}/auditoria")]
+    public async Task<ActionResult<IEnumerable<MovimentoPacienteResponse>>> ListarAuditoria(Guid id, [FromQuery] int limite = 20)
+    {
+        var existe = await _db.Pacientes.AsNoTracking().AnyAsync(p => p.Id == id);
+        if (!existe) return NotFound();
+
+        var movimentos = await _db.LogsAuditoria.AsNoTracking()
+            .Where(l => l.ClinicaId == _tenant.ClinicaId && l.EntidadeTipo == nameof(Paciente) && l.EntidadeId == id)
+            .OrderByDescending(l => l.OcorridoEm)
+            .Take(Math.Clamp(limite, 1, 100))
+            .Select(l => new { l.Id, l.Acao, l.OcorridoEm, l.UsuarioId })
+            .ToListAsync();
+
+        var usuarioIds = movimentos.Select(m => m.UsuarioId).Distinct().ToList();
+        var nomesPorUsuario = await _db.Usuarios.AsNoTracking()
+            .Where(u => usuarioIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.Nome);
+
+        var resposta = movimentos.Select(m => new MovimentoPacienteResponse(
+            m.Id, m.Acao, m.OcorridoEm, nomesPorUsuario.GetValueOrDefault(m.UsuarioId)));
+
+        return Ok(resposta);
+    }
+
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Atualizar(Guid id, CriarPacienteRequest request)
     {
