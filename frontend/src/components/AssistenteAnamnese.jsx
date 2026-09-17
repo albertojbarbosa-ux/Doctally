@@ -1,31 +1,144 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { obterPaciente } from "../api/pacientes";
 import {
   atualizarAtendimento,
   criarAtendimento,
   listarPerguntasAnamnese,
+  obterUltimoAtendimento,
   processarAnamneseIa,
 } from "../api/atendimentos";
 
 const INTERVALO_MIN_PROCESSAMENTO_MS = 6000;
 const TRANSCRICAO_MAX_CHARS = 8000;
 
-function agruparPorSecao(perguntas) {
-  const grupos = [];
-  for (const p of perguntas) {
-    let grupo = grupos.find((g) => g.secao === p.secao);
-    if (!grupo) {
-      grupo = { secao: p.secao, perguntas: [] };
-      grupos.push(grupo);
-    }
-    grupo.perguntas.push(p);
-  }
-  return grupos;
+const CAMPOS = [
+  { chave: "QueixaPrincipal", titulo: "Queixa Principal" },
+  { chave: "HistoriaDoencaAtual", titulo: "História da Doença Atual" },
+  { chave: "AntecedentesPessoais", titulo: "Antecedentes Pessoais e Hábitos" },
+  { chave: "AntecedentesFamiliares", titulo: "Antecedentes Familiares" },
+];
+
+const painelStyle = {
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: 12,
+  padding: "1.1rem 1.25rem",
+  overflowY: "auto",
+  flex: 1,
+  minHeight: 0,
+};
+
+function calcularIdade(dataNascimento) {
+  if (!dataNascimento) return null;
+  const nascimento = new Date(dataNascimento);
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const aindaNaoFezAniversario =
+    hoje.getMonth() < nascimento.getMonth() ||
+    (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate());
+  return aindaNaoFezAniversario ? idade - 1 : idade;
+}
+
+function Campo({ titulo, valor }) {
+  if (!valor) return null;
+  return (
+    <div style={{ marginBottom: "0.6rem" }}>
+      <div
+        style={{
+          fontSize: "0.72rem",
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {titulo}
+      </div>
+      <div style={{ fontSize: "0.88rem" }}>{valor}</div>
+    </div>
+  );
+}
+
+function PainelDadosPaciente({ pacienteId }) {
+  const [paciente, setPaciente] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    obterPaciente(pacienteId)
+      .then(setPaciente)
+      .catch((e) => setErro(e.message))
+      .finally(() => setCarregando(false));
+  }, [pacienteId]);
+
+  return (
+    <div style={painelStyle}>
+      <h3 style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}>Dados do paciente</h3>
+      {carregando && <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Carregando...</p>}
+      {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem" }}>{erro}</p>}
+      {paciente && (
+        <>
+          <div style={{ fontSize: "1.05rem", fontFamily: "var(--font-display)", marginBottom: "0.6rem" }}>
+            {paciente.nomeCompleto}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1.5rem" }}>
+            <Campo titulo="Idade" valor={`${calcularIdade(paciente.dataNascimento)} anos`} />
+            <Campo titulo="Sexo" valor={paciente.sexo} />
+            <Campo titulo="Telefone" valor={paciente.telefone} />
+            <Campo titulo="Convênio" valor={paciente.convenio || "Particular"} />
+          </div>
+          <Campo
+            titulo="Alergias"
+            valor={paciente.possuiAlergias ? paciente.alergiasQuais || "Sim, sem detalhamento" : "Nenhuma registrada"}
+          />
+          <Campo
+            titulo="Medicação em uso"
+            valor={paciente.usaMedicacaoContinua ? paciente.medicacaoQuais || "Sim, sem detalhamento" : null}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+function PainelUltimaConsulta({ pacienteId }) {
+  const [atendimento, setAtendimento] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    obterUltimoAtendimento(pacienteId)
+      .then(setAtendimento)
+      .catch((e) => setErro(e.message))
+      .finally(() => setCarregando(false));
+  }, [pacienteId]);
+
+  return (
+    <div style={painelStyle}>
+      <h3 style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}>Pontos principais da última consulta</h3>
+      {carregando && <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Carregando...</p>}
+      {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem" }}>{erro}</p>}
+      {!carregando && !erro && !atendimento && (
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Nenhuma consulta anterior registrada.</p>
+      )}
+      {atendimento && (
+        <>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.6rem" }}>
+            {new Date(atendimento.dataHora).toLocaleDateString("pt-BR")}
+          </p>
+          <Campo titulo="Queixa Principal" valor={atendimento.queixaPrincipal} />
+          <Campo titulo="História da Doença Atual" valor={atendimento.historiaDoencaAtual} />
+          <Campo titulo="Antecedentes Pessoais" valor={atendimento.antecedentesPessoais} />
+          <Campo titulo="Antecedentes Familiares" valor={atendimento.antecedentesFamiliares} />
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function AssistenteAnamnese({ pacienteId }) {
   const [perguntas, setPerguntas] = useState([]);
-  const [carregandoPerguntas, setCarregandoPerguntas] = useState(true);
   const [respostas, setRespostas] = useState({});
+  const [camposEditados, setCamposEditados] = useState({});
   const [ouvindo, setOuvindo] = useState(false);
   const [transcricaoParcial, setTranscricaoParcial] = useState("");
   const [processando, setProcessando] = useState(false);
@@ -56,8 +169,7 @@ export default function AssistenteAnamnese({ pacienteId }) {
   useEffect(() => {
     listarPerguntasAnamnese()
       .then(setPerguntas)
-      .catch((e) => setErro(e.message))
-      .finally(() => setCarregandoPerguntas(false));
+      .catch((e) => setErro(e.message));
   }, []);
 
   const pararEscuta = useCallback(() => {
@@ -69,9 +181,7 @@ export default function AssistenteAnamnese({ pacienteId }) {
   useEffect(() => () => pararEscuta(), [pararEscuta]);
 
   const processarTrecho = useCallback(async () => {
-    const pendentesIds = perguntasRef.current
-      .map((p) => p.id)
-      .filter((id) => !respostasRef.current[id]);
+    const pendentesIds = perguntasRef.current.map((p) => p.id).filter((id) => !respostasRef.current[id]);
     if (pendentesIds.length === 0 || !atendimentoIdRef.current) return;
 
     setProcessando(true);
@@ -167,34 +277,35 @@ export default function AssistenteAnamnese({ pacienteId }) {
     setOuvindo(true);
   };
 
-  const editarResposta = (id, texto) => {
+  const composto = (campo) => {
+    const texto = perguntas
+      .filter((p) => p.campoAlvo === campo && respostas[p.id])
+      .map((p) => respostas[p.id])
+      .join(" ");
+    return texto || "";
+  };
+
+  const valorCampo = (campo) => camposEditados[campo] ?? composto(campo);
+
+  const editarCampo = (campo, texto) => {
     setSalvo(false);
-    setRespostas((atual) => ({ ...atual, [id]: texto }));
+    setCamposEditados((atual) => ({ ...atual, [campo]: texto }));
   };
 
   const salvarAnamnese = async () => {
     if (!atendimentoIdRef.current) {
-      setErro("Inicie a consulta (ou responda ao menos uma pergunta) antes de salvar.");
+      setErro("Inicie a consulta com a IA antes de salvar.");
       return;
     }
 
     setErro(null);
     setSalvando(true);
-
-    const composto = (campo) => {
-      const texto = perguntas
-        .filter((p) => p.campoAlvo === campo && respostas[p.id])
-        .map((p) => respostas[p.id])
-        .join(" ");
-      return texto || null;
-    };
-
     try {
       await atualizarAtendimento(atendimentoIdRef.current, {
-        queixaPrincipal: composto("QueixaPrincipal"),
-        historiaDoencaAtual: composto("HistoriaDoencaAtual"),
-        antecedentesPessoais: composto("AntecedentesPessoais"),
-        antecedentesFamiliares: composto("AntecedentesFamiliares"),
+        queixaPrincipal: valorCampo("QueixaPrincipal") || null,
+        historiaDoencaAtual: valorCampo("HistoriaDoencaAtual") || null,
+        antecedentesPessoais: valorCampo("AntecedentesPessoais") || null,
+        antecedentesFamiliares: valorCampo("AntecedentesFamiliares") || null,
         revisadoPeloMedico: revisado,
       });
       setSalvo(true);
@@ -205,27 +316,18 @@ export default function AssistenteAnamnese({ pacienteId }) {
     }
   };
 
-  const grupos = agruparPorSecao(perguntas);
-  const totalRespondidas = Object.keys(respostas).filter((id) => respostas[id]).length;
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "1rem 1.25rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-        }}
-      >
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1.25rem", height: "100%", minHeight: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", minHeight: 0 }}>
+        <PainelDadosPaciente pacienteId={pacienteId} />
+        <PainelUltimaConsulta pacienteId={pacienteId} />
+      </div>
+
+      <div style={{ ...painelStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
           <button type="button" onClick={ouvindo ? pararEscuta : iniciarEscuta}>
             {ouvindo ? "■ Parar consulta com IA" : "🎙 Iniciar consulta com IA"}
           </button>
-
           {ouvindo && (
             <span style={{ fontSize: "0.85rem", color: "var(--primary-dark)", fontWeight: 600 }}>
               ● Ouvindo o consultório...
@@ -234,9 +336,6 @@ export default function AssistenteAnamnese({ pacienteId }) {
           {processando && (
             <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Analisando o que foi dito...</span>
           )}
-          <span style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginLeft: "auto" }}>
-            {totalRespondidas} de {perguntas.length} perguntas respondidas
-          </span>
         </div>
 
         {ouvindo && transcricaoParcial && (
@@ -247,70 +346,39 @@ export default function AssistenteAnamnese({ pacienteId }) {
 
         {erro && <p style={{ color: "var(--danger)", fontSize: "0.85rem", margin: 0 }}>{erro}</p>}
 
-        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>
-          A IA escuta a consulta pelo microfone, mostra as perguntas do roteiro padrão de anamnese para o
-          médico fazer ao paciente e vai preenchendo as respostas conforme identifica que cada pergunta foi
-          feita e respondida. Revise o texto antes de salvar.
-        </p>
-      </div>
+        <div
+          style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.9rem" }}
+        >
+          {CAMPOS.map((campo) => (
+            <div key={campo.chave}>
+              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{campo.titulo}</label>
+              <textarea
+                rows={3}
+                placeholder="A IA preenche aqui conforme a consulta avança — ou digite diretamente."
+                value={valorCampo(campo.chave)}
+                onChange={(e) => editarCampo(campo.chave, e.target.value)}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  fontSize: "0.88rem",
+                  fontFamily: "inherit",
+                  padding: "0.55rem 0.7rem",
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  marginTop: "0.3rem",
+                }}
+              />
+            </div>
+          ))}
+        </div>
 
-      {carregandoPerguntas && <p style={{ color: "var(--text-muted)" }}>Carregando roteiro de anamnese...</p>}
-
-      {!carregandoPerguntas &&
-        grupos.map((grupo) => (
-          <div key={grupo.secao} style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            <h3 style={{ fontSize: "0.95rem", color: "var(--primary-dark)" }}>{grupo.secao}</h3>
-            {grupo.perguntas.map((pergunta) => {
-              const respondida = Boolean(respostas[pergunta.id]);
-              return (
-                <div
-                  key={pergunta.id}
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    padding: "0.75rem 1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.4rem",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "baseline" }}>
-                    <span style={{ color: respondida ? "var(--primary-dark)" : "var(--text-muted)" }}>
-                      {respondida ? "✓" : "○"}
-                    </span>
-                    <span style={{ fontSize: "0.88rem" }}>{pergunta.texto}</span>
-                  </div>
-                  <textarea
-                    rows={respondida ? 2 : 1}
-                    placeholder="Resposta ainda não identificada — pergunte ao paciente."
-                    value={respostas[pergunta.id] ?? ""}
-                    onChange={(e) => editarResposta(pergunta.id, e.target.value)}
-                    style={{
-                      width: "100%",
-                      resize: "vertical",
-                      fontSize: "0.85rem",
-                      fontFamily: "inherit",
-                      padding: "0.5rem 0.6rem",
-                      borderRadius: 6,
-                      border: "1px solid var(--border)",
-                      background: respondida ? "var(--bg)" : "transparent",
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        ))}
-
-      {!carregandoPerguntas && (
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: "1rem",
             borderTop: "1px solid var(--border)",
-            paddingTop: "1rem",
+            paddingTop: "0.85rem",
           }}
         >
           <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem" }}>
@@ -322,7 +390,7 @@ export default function AssistenteAnamnese({ pacienteId }) {
           </button>
           {salvo && <span style={{ color: "var(--primary-dark)", fontSize: "0.85rem" }}>Anamnese salva.</span>}
         </div>
-      )}
+      </div>
     </div>
   );
 }

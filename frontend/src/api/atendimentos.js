@@ -23,6 +23,13 @@ export async function criarAtendimento(pacienteId) {
   return res.json();
 }
 
+export async function obterUltimoAtendimento(pacienteId) {
+  const res = await fetch(`${API_URL}/api/pacientes/${pacienteId}/atendimentos/ultimo`, { headers: headers() });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Falha ao carregar a última consulta");
+  return res.json();
+}
+
 export async function atualizarAtendimento(id, dados) {
   const res = await fetch(`${API_URL}/api/atendimentos/${id}`, {
     method: "PUT",

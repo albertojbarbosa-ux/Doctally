@@ -56,6 +56,20 @@ public class AtendimentosController : ControllerBase
         return CreatedAtAction(nameof(ObterPorId), new { id = atendimento.Id }, ParaResponse(atendimento));
     }
 
+    // Última consulta finalizada do paciente (para o painel "pontos principais" na tela
+    // de anamnese) — ignora atendimentos ainda em andamento/não revisados pelo médico.
+    [HttpGet("api/pacientes/{pacienteId:guid}/atendimentos/ultimo")]
+    public async Task<ActionResult<AtendimentoResponse>> ObterUltimoFinalizado(Guid pacienteId)
+    {
+        var atendimento = await _db.Atendimentos.AsNoTracking()
+            .Where(a => a.PacienteId == pacienteId && a.FinalizadoEm != null)
+            .OrderByDescending(a => a.DataHora)
+            .FirstOrDefaultAsync();
+
+        if (atendimento is null) return NotFound();
+        return Ok(ParaResponse(atendimento));
+    }
+
     [HttpGet("api/atendimentos/{id:guid}")]
     public async Task<ActionResult<AtendimentoResponse>> ObterPorId(Guid id)
     {
